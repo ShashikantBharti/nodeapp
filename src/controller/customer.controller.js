@@ -124,7 +124,6 @@ exports.login_user = async (req, res) => {
       validatedRessult.password,
       result.password
     );
-    console.log(passwordMatch, result.password, validatedRessult.password);
     if (!passwordMatch) {
       return res.status(403).json({
         status: false,
