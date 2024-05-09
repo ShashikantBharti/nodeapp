@@ -2,11 +2,13 @@ const Customer_schema = require('../models/customer.models');
 const Bcrypt = require('bcrypt');
 const {
   RegisterValidation,
+  LoginValidation,
 } = require('../middleware/validation/register.validation');
 
 exports.register_users = async (req, res) => {
   try {
-    if (req.method !== 'post') {
+    console.log(req.method);
+    if (req.method !== 'POST') {
       return res.status(401).json({
         status: false,
         message: 'Invalid request method',
@@ -51,9 +53,10 @@ exports.register_users = async (req, res) => {
       });
     }
     // hashing the passwords
-    let salt = Bcrypt.genSalt(10);
+    let salt = await Bcrypt.genSalt(10);
     // here hashing the password
-    let hash_password = Bcrypt.hash(ValidatedRecords.password, salt);
+    console.log(salt);
+    let hash_password = await Bcrypt.hash(ValidatedRecords.password, salt);
     if (!hash_password) {
       return res.status(500).json({
         status: false,
@@ -76,9 +79,63 @@ exports.register_users = async (req, res) => {
         message: 'some error occured',
       });
     }
-    return res.status(201).josn({
+    return res.status(201).json({
       status: true,
       message: 'users created successfully',
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.login_user = async (req, res) => {
+  try {
+    console.log(req.body);
+    if (req.method !== 'POST') {
+      return res.status(401).json({
+        status: false,
+        message: 'Invalid request',
+      });
+    }
+    let validatedRessult = await LoginValidation.validateAsync(req.body);
+    if (!validatedRessult) {
+      return res.status(400).json({
+        status: false,
+        message: 'validation error',
+      });
+    }
+    console.log(validatedRessult.password);
+    // find result in db
+    let result = await Customer_schema.findOne({
+      user_email: validatedRessult.email,
+    });
+    if (!result) {
+      return res.status(403).json({
+        status: false,
+        message: 'wrong credentisl',
+      });
+    }
+    // match the password
+    let passwordMatch = Bcrypt.compareSync(
+      validatedRessult.password,
+      result.password
+    );
+    console.log(passwordMatch, result.password, validatedRessult.password);
+    if (!passwordMatch) {
+      return res.status(403).json({
+        status: false,
+        message: 'wrong credentials',
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: 'Login success',
+      data: result,
     });
   } catch (error) {
     console.log(error.message);

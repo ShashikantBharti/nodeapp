@@ -11,6 +11,12 @@
   <!-- Custom styles -->
   <link rel="stylesheet" href="/css/style.min.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="sweetalert2.min.css">
+  <script src="jquery-3.7.1.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+
 </head>
 
 <body>
@@ -19,14 +25,14 @@
     <article class="sign-up">
       <h1 class="sign-up__title">Welcome back!</h1>
       <p class="sign-up__subtitle">Sign in to your account to continue</p>
-      <form class="sign-up-form form" action="" method="">
+      <form class="sign-up-form form" id="sumbit" action="#" method="">
         <label class="form-label-wrapper">
           <p class="form-label">Email</p>
-          <input class="form-input" type="email" placeholder="Enter your email" required>
+          <input class="form-input" type="email" id="email" placeholder="Enter your email" required>
         </label>
         <label class="form-label-wrapper">
           <p class="form-label">Password</p>
-          <input class="form-input" type="password" placeholder="Enter your password" required>
+          <input class="form-input" type="password" id="password" placeholder="Enter your password" required>
         </label>
         <a class="link-info forget-link" href="##">Forgot your password?</a>
         <label class="form-checkbox-wrapper">
@@ -39,10 +45,42 @@
   </main>
   <!-- Chart library -->
   <script src="/plugins/chart.min.js"></script>
+  <!-- <script src="sweetalert2.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <!-- Icons library -->
   <script src="/plugins/feather.min.js"></script>
   <!-- Custom scripts -->
   <script src="/js/script.js"></script>
+  <script>
+    $(document).ready(function () {
+      $("#sumbit").on('submit', (e) => {
+        e.preventDefault();
+        let email = $('#email').val();
+        let password = $('#password').val();
+
+        $.ajax(
+          {
+            method: 'post',
+            url: '/api/customers/login',
+            data: { "email": email, 'password': password },
+            success: (response) => {
+              console.log(response, 'this is message here')
+              window.location.href = "/admin/dashboard"
+            },
+            error: (err) => {
+              console.log(err, 'this is Error here')
+              // swal('message', err, 'error')
+              Swal.fire({
+                title: err.responseJSON.message,
+                icon: "error"
+              });
+            }
+          }
+        )
+      })
+    })
+  </script>
 </body>
 
 </html>
